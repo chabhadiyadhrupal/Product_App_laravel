@@ -1,0 +1,21 @@
+public function buyNow(Request $request, $id)
+{
+    // Find the product
+    $product = Product::findOrFail($id);
+    $quantity = $request->input('quantity', 1);
+    $totalAmount = $product->price * $quantity;
+
+    // Create Order
+    $order = Order::create([
+        'user_id' => auth()->id(),
+        'product_id' => $product->id,
+        'quantity' => $quantity,
+        'total_price' => $totalAmount,
+    ]);
+
+    // Remove from cart after purchase
+    Cart::where('user_id', auth()->id())->where('product_id', $id)->delete();
+
+    return view('order.confirm', compact('order', 'product'))
+        ->with('success', 'Order placed successfully and removed from cart.');
+}
